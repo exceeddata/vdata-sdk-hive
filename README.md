@@ -24,7 +24,7 @@ The following dependencies will be installed by the SDK if not already exists.
 The codes in the repository are released with [MIT License](LICENSE).
 
 ## Step By Step Guide
-CH [Step By Step Guide](guide.md)
+ [Step By Step Guide CN](guide_cn.md)
 
 ## VSW File Examples
 ### Different Frequency Data  
