@@ -28,8 +28,7 @@ The codes in the repository are released with [MIT License](LICENSE).
 
 ## VSW File Examples
 ### Different Frequency Data  
-- [data_diff_freqency.vsw](https://github.com/exceeddata/sdk-vdata-python/sample_files/vsw/data_diff_freqency.vsw): sample data file with 10Hz, 20Hz, 100Hz datas. This file can be used in vswdecode.py and other language Examples.
-
+- [data_diff_freqency.vsw](https://github.com/exceeddata/sdk-vdata-python/blob/main/sample_files/vsw/data_diff_freqency.vsw): sample data file with 10Hz, 20Hz, 100Hz datas. The Sample file can be found in the Python SDK code repo if the link failed.
 
 ## Getting Help
 For usage questions, the best place to go to is [Github issues](https://github.com/exceeddata/sdk-vdata-hive//issues). For customers of EXCEEDDATA commercial solutions, you can contact [support](mailto:support@smartsct.com) for questions or support.
