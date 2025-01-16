@@ -129,6 +129,9 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 
 LOCATION 'hdfs_path/table_name' ：表示数据存放在hdfs 之中的路径。**需要用户有读该路径的权限。**
 
+** 特别说明 **
+如果在HDFS上已经配置了对应的对象存储AK/SK，例如：S3，OSS，COS，OBS，这里也可以直接使用对象存储上的bucket
+Hive SDK同时也支持 合并VSW格式， https://github.com/exceeddata/vdata-tool-merge , 此时，_device 信息会来自于合并格式中存储的 VIN号。 
 
 
 ## 5.2 添加分区并上传数据
@@ -166,4 +169,11 @@ select * from table_name where vin='VIN1' and dt = '20210629' limit 10;
 ```
 
 ![output (2)](images/hive_output_3.png)
+
+# 6 更多功能
+2025Q1 即将发布
+_device/_time 两个特殊字段的名字自定义功能
+合并格式支持统计信息功能，并使用统计信息在Hive中进行预过滤
+针对于合并格式的任务分配机制优化功能
+
 
