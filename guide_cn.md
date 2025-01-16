@@ -1,8 +1,10 @@
 # 1. 文档目的
 
-帮助使用 hive sdk 来查询  使用 vsw 作为底层存储的分区表。
+VSW文件格式是EXD在车端进行高精数据采集存储的高压缩比的基于时间桶的列式存储文件。VSW通常在车端生成，通常半分钟到三分钟生成一个VSW，然后上传到云端。在量产车的云端系统中，通常会产生巨量的小文件。为了避免在云端存储巨量的小文件带来的存储空间利用率下降，以及检索不便的问题。EXD专门设计了对应的合并VSW格式，可以将多个VSW文件合并存储，高效的生成合并VSW格式。见https://github.com/exceeddata/vdata-tool-merge 
 
-包括如何 配置部署hive sdk，如何创建分区表、上传 vsw 数据，创建分区等使用步骤。
+EXD的SparkSDK/HiveSDK提供了基于Spark/Hive 应用中，提供了对于VSW格式文件以及合并VSW格式文件的直接使用和读取的能力。 如果您的Hive已经配置了对象存储的支持，基于EXD Hive SDK也可以直接读取存储在对象存储上的VSW文件。
+
+本文主要是说明如何使用Hive SDK读取原生VSW文件、合并VSW文件的入门指南，包括如何 配置部署hive sdk，如何创建分区表、上传 vsw 数据，创建分区等使用步骤。
 
 
 
@@ -87,7 +89,7 @@ Hive表以VIN前缀和年-月-日作为分区。
 
 
 ## 5.1 创建hive 分区表
-
+Hive V2 (是的，这里的包路径的确是v3，v3 SDK兼容Hive v2)
 ```SQL
 CREATE EXTERNAL TABLE IF NOT EXISTS table_name
   ( `_device` string,
@@ -97,8 +99,24 @@ CREATE EXTERNAL TABLE IF NOT EXISTS table_name
     ...
   )
   partitioned by(vin STRING,dt STRING)
-  ROW FORMAT SERDE 'com.exceeddata.sdk.vdata.hive.v2.VDataHiveSerDe'
-  STORED AS INPUTFORMAT 'com.exceeddata.sdk.vdata.hive.v2.VDataHiveInputFormat'
+  ROW FORMAT SERDE 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveSerDe'
+  STORED AS INPUTFORMAT 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+  LOCATION 'hdfs_path/table_name';
+```
+
+Hive V3 （仅VDataHiveSerDeV3 不同）
+```SQL
+CREATE EXTERNAL TABLE IF NOT EXISTS table_name
+  ( `_device` string,
+    `_time` timestamp,
+    EB_OutputRodAct double, 
+    EB_MaxAchievableMasterCylinderPressure double,
+    ...
+  )
+  partitioned by(vin STRING,dt STRING)
+  ROW FORMAT SERDE 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveSerDeV3'
+  STORED AS INPUTFORMAT 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
   LOCATION 'hdfs_path/table_name';
 ```
@@ -119,9 +137,9 @@ _time 表示时间，为每一行vsw 的时间。
 
 partitioned by(vin STRING,dt STRING)  ：分区键，可以自定义，该表表示有两个分区键，第一个为vin，第二个为时间。可以根据业务自己设计。**（最好两个分区键）**
 
-ROW FORMAT SERDE 'com.exceeddata.sdk.vdata.hive.v2.VDataHiveSerDe' 
+ROW FORMAT SERDE 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveSerDe' 
 
-STORED AS INPUTFORMAT 'com.exceeddata.sdk.vdata.hive.v2.VDataHiveInputFormat' 
+STORED AS INPUTFORMAT 'com.exceeddata.sdk.vdata.hive.v3.VDataHiveInputFormat' 
 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 
@@ -177,5 +195,6 @@ select * from table_name where vin='VIN1' and dt = '20210629' limit 10;
 _device/_time 两个特殊字段的名字自定义功能
 合并格式支持统计信息功能，并使用统计信息在Hive中进行预过滤
 针对于合并格式的任务分配机制优化功能
-
+直接调用ProtoBuf相应的代码，解析存储在VSW文件中的pb信息
+使用DBC文件，将相应的报文信息转换成 Hive Struct类型
 
